@@ -1,0 +1,186 @@
+while (1) {
+    /* USER CODE END WHILE */
+    if (a == 1) {
+      breaking();
+    } else if (a == 2) {
+      close();
+    } else if (a == 3) {
+      open();
+    }
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
+}
+
+
+void motor_start_open() {
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_RESET);     //F/D 13
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_RESET);  //EN 14
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_11, GPIO_PIN_RESET);  //BRK 15
+}
+
+void motor_start_close() {
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_SET);   //F/D 13
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_RESET);  //EN 14
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_11, GPIO_PIN_RESET);  //BRK 15
+}
+
+void open() {
+  if (lso == 0) {
+    while (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_6) == GPIO_PIN_SET && a == 3) {  //ls open
+      motor_start_open();
+      safetyDistance = calc_dist_open();
+      if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET && p1 == 0) {  //prox close
+        p1 = 1;
+        htim4.Instance->CCR1 = 250;
+      } else if (p1 == 1) {
+        htim4.Instance->CCR1 = 250;
+      } else if (p1 == 0) {
+        if (safetyDistance <= 2) {  //1
+          breaking();
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+        } else if (safetyDistance <= 5 && safetyDistance > 3 && j == 0) {  //5 3
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+          htim4.Instance->CCR1 = 150;
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_SET);
+          HAL_Delay(2000);
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_RESET);
+          HAL_Delay(2000);
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_SET);
+          HAL_Delay(2000);
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_RESET);
+          HAL_Delay(2000);
+          safetyDistance = calc_dist_open();
+          if (safetyDistance <= 5) {  //5
+            j++;
+            breaking();
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+          }
+        } else if (safetyDistance <= 8 && safetyDistance > 5 && k == 0) {  // 8 5
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+          htim4.Instance->CCR1 = 150;
+        } else if (safetyDistance <= 12 && safetyDistance > 8 && k == 0) {  //12 8
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);             //Buzzer
+          htim4.Instance->CCR1 = 250;
+        } else if (safetyDistance > 12) {  //12
+          j = 0;
+          htim4.Instance->CCR1 = 300;
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+        }
+      }
+    }
+		a = 1;
+    lso = 1;
+  }
+  breaking();
+}
+
+void close() {
+  if (lsc == 0) {
+    while (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5) == GPIO_PIN_SET && a == 2) {  //ls open
+      motor_start_close();
+      safetyDistance = calc_dist_close();
+      if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_RESET && p2 == 0) {  //prox close
+        p1 = 1;
+        htim4.Instance->CCR1 = 250;
+      } else if (p1 == 1) {
+        htim4.Instance->CCR1 = 250;
+      } else if (p1 == 0) {
+        if (safetyDistance <= 2) {  //1
+          breaking();
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+        } else if (safetyDistance <= 5 && safetyDistance > 3 && j == 0) {  //5 3
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+          htim4.Instance->CCR1 = 150;
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_SET);
+          HAL_Delay(2000);
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_RESET);
+          HAL_Delay(2000);
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_SET);
+          HAL_Delay(2000);
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_RESET);
+          HAL_Delay(2000);
+          safetyDistance = calc_dist_open();
+          if (safetyDistance <= 5) {  //5
+            j++;
+            breaking();
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+          }
+        } else if (safetyDistance <= 8 && safetyDistance > 5 && k == 0) {  // 8 5
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+          htim4.Instance->CCR1 = 150;
+        } else if (safetyDistance <= 12 && safetyDistance > 8 && k == 0) {  //12 8
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);             //Buzzer
+          htim4.Instance->CCR1 = 250;
+        } else if (safetyDistance > 12) {  //12
+          j = 0;
+          htim4.Instance->CCR1 = 300;
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+        }
+      }
+    }
+		a = 1;
+    lso = 1;
+  }
+  breaking();
+}
+
+
+
+float calc_dist_open() {
+  if (HAL_GetTick() - delay >= 100) {
+    delay = HAL_GetTick();
+    echo2 = HAL_TIM_ReadCapturedValue(&htim8, TIM_CHANNEL_2);
+    dis2 = (echo2 / 58.0f) - 3.2;
+  }
+  return dis2;
+}
+
+float calc_dist_close() {
+  if (HAL_GetTick() - delay >= 100) {
+    delay = HAL_GetTick();
+    echo1 = HAL_TIM_ReadCapturedValue(&htim8, TIM_CHANNEL_1);
+    dis1 = (echo1 / 58.0f) - 3;
+  }
+  return dis1;
+}
+
+void breaking() {
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_11, GPIO_PIN_SET);
+  htim4.Instance->CCR1 = 0;
+}
+
+void EXTI0_IRQHandler(void) {
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+  breaking();
+  a = 1;
+  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET)
+    EXTI->PR |= (1 << 0);
+}
+void EXTI1_IRQHandler(void) {
+  if (cls == 0) {
+    cls = 1;
+    op = 0;
+    HAL_GPIO_EXTI_IRQHandler(BTN_Close_Pin);
+    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET ) {
+      a = 2;
+      lsc = 0;
+      p2 = 0;
+    }
+  }
+  EXTI->PR |= (1 << 1);
+}
+
+void EXTI2_IRQHandler(void) {
+  if (op == 0) {
+    op = 1;
+    cls = 0;
+    HAL_GPIO_EXTI_IRQHandler(BTN_Open_Pin);
+    if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET) {
+      a = 3;
+      lso = 0;
+      p1 = 0;
+    }
+  }	
+	EXTI->PR |= (1 << 2);
+}
